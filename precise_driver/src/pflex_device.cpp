@@ -29,7 +29,7 @@ namespace precise_driver
         exit();
     }
 
-    bool PFlexDevice::init(const int& profile_no, const Profile& profile)
+    bool PFlexDevice::init(const int profile_no, const Profile profile)
     {
         //TODO: check for correct init routine
         ROS_INFO("initializing...");
@@ -85,33 +85,6 @@ namespace precise_driver
         return is_attached_;
     }
 
-    bool PFlexDevice::operable()
-    {
-        bool ret;
-        {
-            std::lock_guard<std::mutex> guard(mutex_state_data_);
-            ret = is_attached_ && is_homed_ && is_hp_ && !is_teachmode_;
-        }
-        return ret;
-    }
-
-    bool PFlexDevice::exit()
-    {
-        std::stringstream ss;
-        ss << "exit";
-        Response res = connection_->send(ss.str());
-        Response res2 = status_connection_->send(ss.str());
-        return (res.error == 0) && (res2.error == 0);
-    }
-
-    bool PFlexDevice::halt()
-    {
-        std::stringstream ss;
-        ss << "halt";
-        Response res = connection_->send(ss.str());
-        return (res.error == 0);
-    }
-
     bool PFlexDevice::home()
     {
         std::stringstream ss;
@@ -124,6 +97,46 @@ namespace precise_driver
         }
 
         return res.success;
+    }
+
+    bool PFlexDevice::halt()
+    {
+        std::stringstream ss;
+        ss << "halt";
+        Response res = connection_->send(ss.str());
+        return (res.error == 0);
+    }
+
+    bool recover()
+    {
+
+    }
+
+    bool PFlexDevice::nop()
+    {
+        std::stringstream ss;
+        ss << "nop";
+        Response res = connection_->send(ss.str());
+        return (res.error == 0);
+    }
+
+    bool PFlexDevice::exit()
+    {
+        std::stringstream ss;
+        ss << "exit";
+        Response res = connection_->send(ss.str());
+        Response res2 = status_connection_->send(ss.str());
+        return (res.error == 0) && (res2.error == 0);
+    }
+
+    bool PFlexDevice::operable()
+    {
+        bool ret;
+        {
+            std::lock_guard<std::mutex> guard(mutex_state_data_);
+            ret = is_attached_ && is_homed_ && is_hp_ && !is_teachmode_;
+        }
+        return ret;
     }
 
     bool PFlexDevice::attach(const bool& flag)
@@ -218,14 +231,6 @@ namespace precise_driver
             << profile.in_range << " "
             << profile.straight;
 
-        Response res = connection_->send(ss.str());
-        return (res.error == 0);
-    }
-
-    bool PFlexDevice::nop()
-    {
-        std::stringstream ss;
-        ss << "nop";
         Response res = connection_->send(ss.str());
         return (res.error == 0);
     }
